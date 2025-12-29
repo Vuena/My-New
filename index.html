@@ -3,43 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instant Life Insurance Premium Estimator - Premium Peek</title>
-    <meta name="description" content="Simple, fast, and transparent life insurance estimates. Calculate your peace of mind in seconds.">
+    <title>Premium Peek - Modern Life Insurance</title>
+    <meta name="description" content="Get a reliable life insurance premium estimate in seconds with our smart calculator.">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        appleBg: '#F5F5F7',
-                        appleText: '#1D1D1F',
-                        appleBlue: '#0066CC',
-                        appleBlueHover: '#004499',
-                        white: '#FFFFFF',
+                        fintechBlack: '#0a0a0a',
+                        fintechWhite: '#ffffff',
+                        electricBlue: '#2563eb', // A bright blue
+                        electricBlueHover: '#1d4ed8',
+                        fintechGray: '#f3f4f6',
+                        fintechCard: '#ffffff',
                     },
                     fontFamily: {
-                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+                        sans: ['Inter', 'sans-serif'],
                     },
                     boxShadow: {
-                        'apple': '0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02)',
-                        'apple-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025)',
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'glow': '0 0 15px rgba(37, 99, 235, 0.3)',
+                    },
+                    letterSpacing: {
+                        'tight-heading': '-0.03em',
                     }
                 }
             }
         }
     </script>
-    <!-- Google Fonts: Inter -->
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0a0a0a; font-size: 16px; -webkit-font-smoothing: antialiased; }
+        .bento-card { background: #ffffff; border-radius: 1.5rem; box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); border: 1px solid #f1f5f9; }
         .step-content { display: none; animation: fadeIn 0.4s ease-out; }
         .step-content.active { display: block; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        /* Custom Range Slider Styling (Optional Apple-like touch) */
+        /* Sticky Mobile Button */
+        .sticky-mobile-btn {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid #e5e7eb;
+            z-index: 50;
+            display: none; /* Shown via JS on mobile */
+        }
+        @media (max-width: 768px) {
+            .sticky-mobile-btn { display: block; }
+            .desktop-nav-btn { display: none; }
+        }
+        /* Chat Widget */
+        .chat-widget {
+            position: fixed;
+            bottom: 100px; /* Above sticky btn on mobile */
+            right: 20px;
+            width: 350px;
+            max-height: 500px;
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 40px -5px rgba(0, 0, 0, 0.1);
+            display: none;
+            flex-direction: column;
+            z-index: 49;
+            border: 1px solid #e5e7eb;
+        }
+        .chat-widget.open { display: flex; }
+        .chat-toggle {
+            position: fixed;
+            bottom: 80px; /* Above sticky btn */
+            right: 20px;
+            z-index: 49;
+            transition: transform 0.2s;
+        }
+        .chat-toggle:hover { transform: scale(1.05); }
+        @media (min-width: 769px) {
+            .chat-widget { bottom: 90px; }
+            .chat-toggle { bottom: 30px; }
+        }
+
         input[type=range] {
             -webkit-appearance: none;
             background: transparent;
@@ -49,9 +100,9 @@
             height: 20px;
             width: 20px;
             border-radius: 50%;
-            background: #ffffff;
-            border: 1px solid #d1d1d6;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: #2563eb;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
             cursor: pointer;
             margin-top: -8px;
         }
@@ -59,322 +110,305 @@
             width: 100%;
             height: 4px;
             cursor: pointer;
-            background: #e5e5ea;
+            background: #e5e7eb;
             border-radius: 2px;
-        }
-        details > summary {
-            list-style: none;
-        }
-        details > summary::-webkit-details-marker {
-            display: none;
-        }
-        /* Animation for Shake Effect */
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
-            20%, 40%, 60%, 80% { transform: translateX(4px); }
-        }
-        .shake-animation {
-            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
-            border-color: #ff3b30 !important; /* Apple Red */
         }
     </style>
 </head>
-<body class="bg-appleBg text-appleText flex flex-col min-h-screen">
+<body class="flex flex-col min-h-screen">
 
-    <!-- Navbar: Minimal -->
-    <nav class="bg-white bg-opacity-80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-200">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center max-w-5xl">
-            <div class="text-xl font-semibold tracking-tight text-appleText">Premium Peek</div>
-            <!-- AdSense Header Placeholder (Minimal) -->
-            <div class="hidden md:block w-[320px] h-[50px] bg-gray-100 flex items-center justify-center text-xs text-gray-400 rounded">
-                <!-- PASTE HEADER ADSENSE HERE -->
-                AdSpace: Header (320x50)
+    <!-- Navbar -->
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-gray-100">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="text-xl font-bold tracking-tight-heading text-fintechBlack flex items-center gap-2">
+                <div class="w-8 h-8 bg-fintechBlack rounded-lg flex items-center justify-center text-white font-bold">P</div>
+                Premium Peek
             </div>
+            <div class="hidden md:flex gap-6 text-sm font-medium text-gray-600">
+                <a href="#" class="hover:text-electricBlue transition">Products</a>
+                <a href="#" class="hover:text-electricBlue transition">Learn</a>
+                <a href="#" class="hover:text-electricBlue transition">About</a>
+            </div>
+            <button class="bg-fintechBlack text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-gray-800 transition">Log In</button>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section class="text-center pt-20 pb-12 px-4">
-        <h1 class="text-4xl md:text-6xl font-bold tracking-tight mb-4 text-appleText">
-            Calculate your peace of mind.
+    <!-- Hero & Trust Bar -->
+    <section class="pt-12 pb-8 px-4 text-center max-w-4xl mx-auto">
+        <div class="inline-block px-3 py-1 mb-4 rounded-full bg-blue-50 text-electricBlue text-xs font-bold tracking-wide uppercase">
+            Smart Insurance
+        </div>
+        <h1 class="text-4xl md:text-6xl font-bold tracking-tight-heading text-fintechBlack mb-6 leading-tight">
+            Life insurance built for <span class="text-electricBlue">modern life</span>.
         </h1>
-        <p class="text-xl md:text-2xl text-gray-500 font-normal max-w-2xl mx-auto">
-            Simple, fast, and transparent life insurance estimates.
+        <p class="text-lg text-gray-500 mb-8 max-w-2xl mx-auto">
+            Get personalized coverage recommendations and compare top-rated carriers in minutes. No spam, just peace of mind.
         </p>
+
+        <!-- Trust Bar -->
+        <div class="flex flex-wrap justify-center items-center gap-6 md:gap-12 opacity-60 grayscale mt-8">
+            <!-- Dummy Logos (Text for simplicity) -->
+            <span class="font-bold text-xl">Prudential</span>
+            <span class="font-bold text-xl">BannerLife</span>
+            <span class="font-bold text-xl">PacificLife</span>
+            <div class="flex items-center gap-1">
+                <span class="text-green-500 text-lg">★</span>
+                <span class="font-bold text-sm">Trustpilot</span>
+                <span class="text-xs font-medium bg-gray-100 px-1 rounded">4.9/5</span>
+            </div>
+        </div>
     </section>
 
-    <!-- Main Content -->
-    <main class="flex-grow container mx-auto px-4 pb-20 max-w-3xl">
+    <!-- Main Dashboard / Bento Grid -->
+    <main class="flex-grow container mx-auto px-4 py-8 max-w-6xl">
 
-        <!-- Multi-Step Calculator Widget -->
-        <div class="bg-white rounded-3xl shadow-apple p-8 md:p-12 mb-16 relative overflow-hidden transition-all duration-300">
-            <!-- Progress Indicator (Simple Dots) -->
-            <div class="flex justify-center space-x-2 mb-8" id="progress-dots">
-                <div class="w-2 h-2 rounded-full bg-appleBlue transition-all"></div>
-                <div class="w-2 h-2 rounded-full bg-gray-300 transition-all"></div>
-                <div class="w-2 h-2 rounded-full bg-gray-300 transition-all"></div>
-                <div class="w-2 h-2 rounded-full bg-gray-300 transition-all"></div>
-                <div class="w-2 h-2 rounded-full bg-gray-300 transition-all"></div>
-            </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            <form id="calculator-form">
-                <!-- Step 1: Age -->
-                <div id="step-1" class="step-content active text-center">
-                    <label for="age" class="block text-2xl font-semibold mb-6">How old are you?</label>
-                    <div class="flex justify-center mb-8">
-                        <input type="number" id="age" name="age" placeholder="30" min="18" max="100" class="w-32 text-center text-4xl font-bold border-b-2 border-gray-200 focus:border-appleBlue outline-none py-2 transition-colors bg-transparent placeholder-gray-300 text-appleText">
-                    </div>
-                    <p class="text-gray-500 mb-8">Age is the primary factor in determining your baseline rate.</p>
-                    <button type="button" class="btn-next bg-appleBlue hover:bg-appleBlueHover text-white font-medium py-3 px-8 rounded-full transition-transform transform hover:scale-105">
-                        Next
-                    </button>
+            <!-- Left Col: Smart Needs Calculator (Ladder-like) -->
+            <div class="lg:col-span-2 bento-card p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold tracking-tight-heading">Smart Coverage Calculator</h2>
+                    <span class="text-sm text-gray-400">Interactive</span>
                 </div>
 
-                <!-- Step 2: Gender -->
-                <div id="step-2" class="step-content text-center">
-                    <h2 class="text-2xl font-semibold mb-8">What is your gender?</h2>
-                    <div class="grid grid-cols-2 gap-4 max-w-xs mx-auto mb-8">
-                        <label class="cursor-pointer group">
-                            <input type="radio" name="gender" value="female" class="peer sr-only" checked>
-                            <div class="p-6 rounded-2xl border border-gray-200 peer-checked:border-appleBlue peer-checked:bg-blue-50 transition-all group-hover:shadow-md">
-                                <span class="block text-lg font-medium">Female</span>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer group">
-                            <input type="radio" name="gender" value="male" class="peer sr-only">
-                            <div class="p-6 rounded-2xl border border-gray-200 peer-checked:border-appleBlue peer-checked:bg-blue-50 transition-all group-hover:shadow-md">
-                                <span class="block text-lg font-medium">Male</span>
-                            </div>
-                        </label>
-                    </div>
-                    <div class="flex justify-center space-x-4">
-                        <button type="button" class="btn-back text-appleBlue font-medium py-3 px-6 rounded-full hover:bg-gray-50 transition-colors">Back</button>
-                        <button type="button" class="btn-next bg-appleBlue hover:bg-appleBlueHover text-white font-medium py-3 px-8 rounded-full transition-transform transform hover:scale-105">Next</button>
-                    </div>
-                </div>
-
-                <!-- Step 3: Smoking -->
-                <div id="step-3" class="step-content text-center">
-                    <h2 class="text-2xl font-semibold mb-8">Do you smoke?</h2>
-                    <div class="grid grid-cols-2 gap-4 max-w-xs mx-auto mb-8">
-                        <label class="cursor-pointer group">
-                            <input type="radio" name="smoking" value="non-smoker" class="peer sr-only" checked>
-                            <div class="p-6 rounded-2xl border border-gray-200 peer-checked:border-appleBlue peer-checked:bg-blue-50 transition-all group-hover:shadow-md">
-                                <span class="block text-lg font-medium">No</span>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer group">
-                            <input type="radio" name="smoking" value="smoker" class="peer sr-only">
-                            <div class="p-6 rounded-2xl border border-gray-200 peer-checked:border-appleBlue peer-checked:bg-blue-50 transition-all group-hover:shadow-md">
-                                <span class="block text-lg font-medium">Yes</span>
-                            </div>
-                        </label>
-                    </div>
-                    <div class="flex justify-center space-x-4">
-                        <button type="button" class="btn-back text-appleBlue font-medium py-3 px-6 rounded-full hover:bg-gray-50 transition-colors">Back</button>
-                        <button type="button" class="btn-next bg-appleBlue hover:bg-appleBlueHover text-white font-medium py-3 px-8 rounded-full transition-transform transform hover:scale-105">Next</button>
-                    </div>
-                </div>
-
-                <!-- Step 4: Health -->
-                <div id="step-4" class="step-content text-center">
-                    <h2 class="text-2xl font-semibold mb-8">How is your health?</h2>
-                    <div class="space-y-3 max-w-sm mx-auto mb-8">
-                        <label class="cursor-pointer group block">
-                            <input type="radio" name="health" value="excellent" class="peer sr-only">
-                            <div class="p-4 rounded-xl border border-gray-200 peer-checked:border-appleBlue peer-checked:bg-blue-50 transition-all hover:bg-gray-50 flex justify-between items-center">
-                                <span class="font-medium">Excellent</span>
-                                <span class="text-sm text-gray-500">No major issues</span>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer group block">
-                            <input type="radio" name="health" value="good" class="peer sr-only" checked>
-                            <div class="p-4 rounded-xl border border-gray-200 peer-checked:border-appleBlue peer-checked:bg-blue-50 transition-all hover:bg-gray-50 flex justify-between items-center">
-                                <span class="font-medium">Good</span>
-                                <span class="text-sm text-gray-500">Minor issues</span>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer group block">
-                            <input type="radio" name="health" value="average" class="peer sr-only">
-                            <div class="p-4 rounded-xl border border-gray-200 peer-checked:border-appleBlue peer-checked:bg-blue-50 transition-all hover:bg-gray-50 flex justify-between items-center">
-                                <span class="font-medium">Average</span>
-                                <span class="text-sm text-gray-500">Some conditions</span>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer group block">
-                            <input type="radio" name="health" value="fair" class="peer sr-only">
-                            <div class="p-4 rounded-xl border border-gray-200 peer-checked:border-appleBlue peer-checked:bg-blue-50 transition-all hover:bg-gray-50 flex justify-between items-center">
-                                <span class="font-medium">Fair</span>
-                                <span class="text-sm text-gray-500">Managing health</span>
-                            </div>
-                        </label>
-                    </div>
-                    <div class="flex justify-center space-x-4">
-                        <button type="button" class="btn-back text-appleBlue font-medium py-3 px-6 rounded-full hover:bg-gray-50 transition-colors">Back</button>
-                        <button type="button" class="btn-next bg-appleBlue hover:bg-appleBlueHover text-white font-medium py-3 px-8 rounded-full transition-transform transform hover:scale-105">Next</button>
-                    </div>
-                </div>
-
-                <!-- Step 5: Coverage & Result -->
-                <div id="step-5" class="step-content text-center">
-                    <h2 class="text-2xl font-semibold mb-6">Desired Coverage</h2>
-
-                    <div class="mb-10 max-w-sm mx-auto">
-                        <label for="coverage" class="block text-4xl font-bold text-appleBlue mb-4" id="coverage-display">$250,000</label>
-                        <input type="range" id="coverage" name="coverage" min="100000" max="1000000" step="50000" value="250000" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
-                        <div class="flex justify-between text-xs text-gray-400 mt-2">
-                            <span>$100k</span>
-                            <span>$1M</span>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2 flex justify-between">
+                                <span>Mortgage Balance</span>
+                                <span id="mortgage-val" class="font-bold">$250k</span>
+                            </label>
+                            <input type="range" id="mortgage" min="0" max="1000000" step="10000" value="250000" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2 flex justify-between">
+                                <span>Total Debts</span>
+                                <span id="debt-val" class="font-bold">$20k</span>
+                            </label>
+                            <input type="range" id="debt" min="0" max="200000" step="1000" value="20000" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2 flex justify-between">
+                                <span>Income Replacement (Years)</span>
+                                <span id="income-years-val" class="font-bold">10 Years</span>
+                            </label>
+                            <input type="range" id="income-years" min="0" max="30" step="1" value="10" class="w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2 flex justify-between">
+                                <span>Annual Income</span>
+                                <span id="income-val" class="font-bold">$75k</span>
+                            </label>
+                            <input type="range" id="income" min="30000" max="500000" step="5000" value="75000" class="w-full">
                         </div>
                     </div>
 
-                    <div class="flex justify-center space-x-4 mb-8">
-                         <button type="button" class="btn-back text-appleBlue font-medium py-3 px-6 rounded-full hover:bg-gray-50 transition-colors">Back</button>
-                         <button type="button" id="calculate-final-btn" class="bg-appleBlue hover:bg-appleBlueHover text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105">
-                            Calculate Estimate
-                        </button>
+                    <div class="bg-fintechBlack text-white rounded-2xl p-6 flex flex-col justify-center items-center text-center relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-gray-800 to-black z-0"></div>
+                        <div class="relative z-10">
+                            <p class="text-gray-400 text-sm mb-1 uppercase tracking-wider">Recommended Coverage</p>
+                            <div id="recommended-coverage" class="text-4xl md:text-5xl font-bold tracking-tight mb-4 text-electricBlue">$1.02M</div>
+                            <p class="text-xs text-gray-500">Based on your liabilities & income needs.</p>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Result Section (Initially Hidden) -->
-                <div id="result-section" class="hidden text-center animate-fade-in pt-4">
-                     <div class="inline-block p-2 rounded-full bg-green-100 text-green-600 mb-4">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                     </div>
-                     <h3 class="text-lg font-medium text-gray-500 mb-2">Estimated Monthly Premium</h3>
-                     <div id="premium-amount" class="text-5xl font-bold text-appleText mb-4 tracking-tighter">$0.00</div>
-                     <p class="text-sm text-gray-400 max-w-md mx-auto leading-relaxed">
-                        This is a non-binding estimate for educational purposes only. Actual premiums may vary based on detailed underwriting.
-                     </p>
-                     <p class="text-xs text-red-400 mt-2">
-                        Not financial advice.
-                     </p>
-                     <button type="button" id="restart-btn" class="mt-8 text-appleBlue font-medium hover:underline">Start Over</button>
+                <!-- Coverage Chart -->
+                <div class="mt-8 h-48 w-full">
+                    <canvas id="coverageChart"></canvas>
                 </div>
-            </form>
-        </div>
-
-        <!-- AdSense Placeholder: Mid Content -->
-        <div class="w-full h-[250px] bg-gray-200 border border-gray-300 rounded-xl flex items-center justify-center text-gray-400 text-sm mb-16 mx-auto max-w-3xl">
-            <!-- PASTE CONTENT ADSENSE CODE HERE -->
-            AdSpace: Content (Responsive)
-        </div>
-
-        <!-- Insurance Insights (Apple-style Cards) -->
-        <section class="mb-20">
-            <h2 class="text-3xl font-bold mb-8 text-center text-appleText">Insurance Insights</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Card 1 -->
-                <article class="bg-white rounded-2xl shadow-apple hover:shadow-apple-hover transition-all duration-300 p-6 flex flex-col h-full">
-                    <div class="mb-4">
-                        <span class="text-xs font-bold tracking-wider text-appleBlue uppercase">Analysis</span>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3 leading-tight text-appleText">Age & Health Impact</h3>
-                    <p class="text-gray-500 text-sm leading-relaxed flex-grow">
-                        Securing a policy in your 20s or 30s can lock in significantly lower rates. An "Excellent" health rating can lower your estimated premium by as much as 15-20%.
-                    </p>
-                </article>
-
-                <!-- Card 2 -->
-                <article class="bg-white rounded-2xl shadow-apple hover:shadow-apple-hover transition-all duration-300 p-6 flex flex-col h-full">
-                    <div class="mb-4">
-                        <span class="text-xs font-bold tracking-wider text-appleBlue uppercase">Lifestyle</span>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3 leading-tight text-appleText">The Cost of Habits</h3>
-                    <p class="text-gray-500 text-sm leading-relaxed flex-grow">
-                        Smokers can expect to pay 200% to 300% more than non-smokers. Quitting for 12 months can reclassify you and save thousands.
-                    </p>
-                </article>
-
-                <!-- Card 3 -->
-                <article class="bg-white rounded-2xl shadow-apple hover:shadow-apple-hover transition-all duration-300 p-6 flex flex-col h-full">
-                    <div class="mb-4">
-                        <span class="text-xs font-bold tracking-wider text-appleBlue uppercase">Transparency</span>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3 leading-tight text-appleText">Use an Estimator</h3>
-                    <p class="text-gray-500 text-sm leading-relaxed flex-grow">
-                        Gain transparency before speaking to an agent. Test coverage amounts to find what fits your monthly budget without pressure.
-                    </p>
-                </article>
             </div>
-        </section>
 
-        <!-- FAQ Section (Accordion) -->
-        <section class="max-w-2xl mx-auto mb-20">
-            <h2 class="text-3xl font-bold mb-8 text-center text-appleText">Q&A</h2>
+            <!-- Right Col: Progressive Quote Flow -->
+            <div class="lg:col-span-1 space-y-6">
+
+                <!-- Quote Widget Card -->
+                <div class="bento-card p-6 h-full flex flex-col relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gray-100">
+                        <div id="progress-bar" class="h-full bg-electricBlue transition-all duration-500" style="width: 10%"></div>
+                    </div>
+
+                    <div class="mb-4 pt-2 flex justify-between items-end">
+                        <h3 class="text-lg font-bold">Get a Quote</h3>
+                        <span id="progress-text" class="text-xs font-semibold text-electricBlue">Start</span>
+                    </div>
+
+                    <form id="quote-form" class="flex-grow flex flex-col">
+
+                        <!-- Step 1: Zip Code -->
+                        <div id="q-step-1" class="step-content active flex-grow flex flex-col justify-center">
+                            <label class="block text-sm font-medium text-gray-600 mb-2">Zip Code</label>
+                            <input type="text" id="zipcode" placeholder="10001" class="w-full text-2xl font-bold border-b-2 border-gray-200 py-2 focus:outline-none focus:border-electricBlue mb-4 placeholder-gray-300">
+                            <p class="text-xs text-gray-400">To check carrier availability in your area.</p>
+                        </div>
+
+                        <!-- Step 2: Demographics -->
+                        <div id="q-step-2" class="step-content flex-grow">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Age</label>
+                                    <input type="number" id="age" placeholder="30" class="w-full p-3 bg-gray-50 rounded-xl font-bold text-lg border border-transparent focus:bg-white focus:border-electricBlue outline-none transition">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold uppercase text-gray-400 mb-2">Gender</label>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <label class="cursor-pointer">
+                                            <input type="radio" name="gender" value="female" class="peer sr-only">
+                                            <div class="p-3 bg-gray-50 rounded-xl text-center font-medium border border-transparent peer-checked:bg-blue-50 peer-checked:border-electricBlue peer-checked:text-electricBlue transition">Female</div>
+                                        </label>
+                                        <label class="cursor-pointer">
+                                            <input type="radio" name="gender" value="male" class="peer sr-only">
+                                            <div class="p-3 bg-gray-50 rounded-xl text-center font-medium border border-transparent peer-checked:bg-blue-50 peer-checked:border-electricBlue peer-checked:text-electricBlue transition">Male</div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Health & Habits -->
+                        <div id="q-step-3" class="step-content flex-grow">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-bold uppercase text-gray-400 mb-2">Nicotine Use?</label>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <label class="cursor-pointer">
+                                            <input type="radio" name="smoking" value="non-smoker" class="peer sr-only">
+                                            <div class="p-3 bg-gray-50 rounded-xl text-center font-medium border border-transparent peer-checked:bg-blue-50 peer-checked:border-electricBlue peer-checked:text-electricBlue transition">No</div>
+                                        </label>
+                                        <label class="cursor-pointer">
+                                            <input type="radio" name="smoking" value="smoker" class="peer sr-only">
+                                            <div class="p-3 bg-gray-50 rounded-xl text-center font-medium border border-transparent peer-checked:bg-blue-50 peer-checked:border-electricBlue peer-checked:text-electricBlue transition">Yes</div>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold uppercase text-gray-400 mb-2">Health Status</label>
+                                    <select id="health" class="w-full p-3 bg-gray-50 rounded-xl font-medium outline-none border border-transparent focus:border-electricBlue">
+                                        <option value="excellent">Excellent</option>
+                                        <option value="good">Good</option>
+                                        <option value="average">Average</option>
+                                        <option value="fair">Fair</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 desktop-nav-btn">
+                            <button type="button" id="next-btn" class="w-full bg-fintechBlack text-white font-bold py-3 rounded-xl hover:bg-gray-800 transition shadow-lg">Next</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Matrix (Hidden initially) -->
+        <div id="result-matrix" class="hidden mt-12 animate-fade-in">
+            <h2 class="text-2xl font-bold mb-6">Your Matches</h2>
             <div class="space-y-4">
-                <details class="group bg-white rounded-2xl shadow-apple overflow-hidden">
-                    <summary class="flex justify-between items-center font-medium cursor-pointer list-none p-6 text-appleText">
-                        <span>Term vs. Whole Life Insurance?</span>
-                        <span class="transition group-open:rotate-180">
-                            <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
-                        </span>
-                    </summary>
-                    <div class="text-gray-500 text-sm px-6 pb-6 leading-relaxed">
-                        Term life provides coverage for a specific period (e.g., 20 years) and is affordable. Whole life covers you for a lifetime and builds cash value but costs significantly more.
+                <!-- Best Value Row -->
+                <div class="bento-card p-6 flex flex-col md:flex-row items-center justify-between border-2 border-electricBlue relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-electricBlue text-white text-xs font-bold px-3 py-1 rounded-bl-xl">BEST VALUE</div>
+                    <div class="flex items-center gap-4 mb-4 md:mb-0">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center font-bold text-gray-500">BL</div>
+                        <div>
+                            <div class="font-bold text-lg">Banner Life</div>
+                            <div class="text-xs text-gray-500">A.M. Best: A+ (Superior)</div>
+                        </div>
                     </div>
-                </details>
+                    <div class="flex items-center gap-8">
+                        <div class="text-right">
+                            <div class="text-3xl font-bold tracking-tight text-fintechBlack" id="result-price-1">$00.00</div>
+                            <div class="text-xs text-gray-400">/mo</div>
+                        </div>
+                        <button class="bg-electricBlue text-white px-6 py-2 rounded-lg font-bold hover:bg-electricBlueHover transition">Apply</button>
+                    </div>
+                </div>
 
-                <details class="group bg-white rounded-2xl shadow-apple overflow-hidden">
-                    <summary class="flex justify-between items-center font-medium cursor-pointer list-none p-6 text-appleText">
-                        <span>How accurate is this estimate?</span>
-                        <span class="transition group-open:rotate-180">
-                            <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
-                        </span>
-                    </summary>
-                    <div class="text-gray-500 text-sm px-6 pb-6 leading-relaxed">
-                        This tool provides a ballpark figure based on standard underwriting. Actual premiums depend on medical exams and specific insurer criteria.
+                <!-- Competitor Row -->
+                <div class="bento-card p-6 flex flex-col md:flex-row items-center justify-between">
+                    <div class="flex items-center gap-4 mb-4 md:mb-0">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center font-bold text-gray-500">PL</div>
+                        <div>
+                            <div class="font-bold text-lg">Pacific Life</div>
+                            <div class="text-xs text-gray-500">A.M. Best: A+</div>
+                        </div>
                     </div>
-                </details>
-
-                <details class="group bg-white rounded-2xl shadow-apple overflow-hidden">
-                    <summary class="flex justify-between items-center font-medium cursor-pointer list-none p-6 text-appleText">
-                        <span>Can I change coverage later?</span>
-                        <span class="transition group-open:rotate-180">
-                            <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
-                        </span>
-                    </summary>
-                    <div class="text-gray-500 text-sm px-6 pb-6 leading-relaxed">
-                        Yes, decreasing coverage is usually easy. Increasing it typically requires a new medical review.
+                    <div class="flex items-center gap-8">
+                        <div class="text-right">
+                            <div class="text-2xl font-bold tracking-tight text-gray-600" id="result-price-2">$00.00</div>
+                            <div class="text-xs text-gray-400">/mo</div>
+                        </div>
+                        <button class="bg-gray-100 text-gray-800 px-6 py-2 rounded-lg font-bold hover:bg-gray-200 transition">View</button>
                     </div>
-                </details>
+                </div>
             </div>
-        </section>
+        </div>
 
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-white border-t border-gray-200 pt-10 pb-6 text-sm text-gray-500">
-        <div class="container mx-auto px-4 max-w-5xl">
-            <div class="flex flex-col md:flex-row justify-between items-center mb-8">
-                <div class="mb-4 md:mb-0">
-                    <span class="font-semibold text-appleText">Premium Peek</span>
-                </div>
-                <div class="flex space-x-6">
-                    <a href="#" class="hover:text-appleBlue transition">Privacy Policy</a>
-                    <a href="#" class="hover:text-appleBlue transition">Terms of Service</a>
-                    <a href="#" class="hover:text-appleBlue transition">Contact Us</a>
-                </div>
+    <!-- Sticky Mobile Button -->
+    <div class="sticky-mobile-btn">
+        <button type="button" id="mobile-next-btn" class="w-full bg-electricBlue text-white font-bold py-3 rounded-xl shadow-glow">Next</button>
+    </div>
+
+    <!-- AI Chat Widget -->
+    <button id="chat-toggle" class="chat-toggle w-14 h-14 bg-fintechBlack text-white rounded-full shadow-lg flex items-center justify-center">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+    </button>
+
+    <div id="chat-widget" class="chat-widget">
+        <div class="bg-fintechBlack text-white p-4 rounded-t-3xl flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span class="font-bold text-sm">Insurance Assistant</span>
             </div>
-            <div class="text-center md:text-left text-xs text-gray-400">
-                <p class="mb-2">Copyright © 2025 Premium Peek. All rights reserved.</p>
-                <p>This tool provides educational estimates and is not a substitute for professional financial advice.</p>
+            <button id="close-chat" class="text-gray-400 hover:text-white">&times;</button>
+        </div>
+        <div class="p-4 flex-grow overflow-y-auto bg-gray-50 text-sm space-y-3" id="chat-messages">
+            <div class="bg-white p-3 rounded-lg rounded-tl-none shadow-sm max-w-[80%] border border-gray-100">
+                Hello! I can analyze policy documents and answer questions. How can I help?
+            </div>
+        </div>
+        <div class="p-3 border-t border-gray-100 bg-white rounded-b-3xl">
+            <div class="flex gap-2">
+                <input type="text" id="chat-input" placeholder="Ask anything..." class="flex-grow p-2 bg-gray-50 rounded-lg text-sm outline-none focus:ring-1 focus:ring-electricBlue">
+                <button class="bg-electricBlue text-white p-2 rounded-lg">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                </button>
+            </div>
+            <button class="w-full mt-2 border border-gray-200 text-gray-600 text-xs py-2 rounded-lg hover:bg-gray-50 font-medium">
+                📅 Schedule a Call with an Agent
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 py-12 mt-12">
+        <div class="container mx-auto px-4 grid md:grid-cols-4 gap-8 text-sm">
+            <div>
+                <div class="font-bold text-lg mb-4">Premium Peek</div>
+                <p class="text-gray-500">Modern life insurance tools for the digital age.</p>
+            </div>
+            <div>
+                <div class="font-bold mb-4">Company</div>
+                <ul class="space-y-2 text-gray-500">
+                    <li><a href="#" class="hover:text-black">About</a></li>
+                    <li><a href="#" class="hover:text-black">Careers</a></li>
+                    <li><a href="#" class="hover:text-black">Contact</a></li>
+                </ul>
+            </div>
+            <div>
+                <div class="font-bold mb-4">Legal</div>
+                <ul class="space-y-2 text-gray-500">
+                    <li><a href="#" class="hover:text-black">Privacy Policy</a></li>
+                    <li><a href="#" class="hover:text-black">Terms of Service</a></li>
+                    <li><a href="#" class="hover:text-black">Licenses</a></li>
+                </ul>
             </div>
         </div>
     </footer>
 
-    <!-- Cookie Consent Banner (Apple Style) -->
-    <div id="cookie-banner" class="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 bg-white/80 backdrop-blur-xl border border-gray-200 rounded-2xl shadow-2xl p-4 transform translate-y-[150%] transition-transform duration-500 z-50 flex flex-col gap-3">
-        <p class="text-xs text-gray-500 font-medium">
-            We use cookies to improve your experience and analyze traffic.
-        </p>
-        <button id="accept-cookies" class="w-full bg-appleText text-white text-sm font-medium py-2 rounded-xl hover:bg-black transition-colors">
-            Accept
-        </button>
-    </div>
-
-    <!-- Logic Script -->
+    <!-- Scripts -->
     <script src="script.js"></script>
 </body>
 </html>
