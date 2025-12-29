@@ -99,9 +99,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (step === 1) {
             const ageInput = document.getElementById('age');
             const age = parseInt(ageInput.value);
+
+            // Remove previous error state
+            ageInput.classList.remove('shake-animation');
+
             if (!age || age < 18 || age > 100) {
-                alert("Please enter a valid age between 18 and 100.");
+                // Apply shake animation and error styling
+                ageInput.classList.add('shake-animation');
                 ageInput.focus();
+
+                // Remove class after animation completes to allow re-triggering
+                setTimeout(() => {
+                    ageInput.classList.remove('shake-animation');
+                }, 500);
+
                 return false;
             }
         }
