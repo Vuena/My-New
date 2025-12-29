@@ -1,7 +1,7 @@
 // Fintech Minimalist Logic & Interactions
 
 document.addEventListener('DOMContentLoaded', () => {
-
+  try {
     // --- 1. Smart Coverage Calculator Logic ---
     const mortgageInput = document.getElementById('mortgage');
     const debtInput = document.getElementById('debt');
@@ -106,32 +106,45 @@ document.addEventListener('DOMContentLoaded', () => {
         mobileNextBtn.textContent = btnText;
     }
 
+    function showValidationMsg(msg) {
+        const el = document.getElementById('validation-msg');
+        if(el) {
+            el.textContent = msg;
+            el.classList.remove('hidden');
+            setTimeout(() => {
+                el.classList.add('hidden');
+            }, 3000);
+        } else {
+            alert(msg);
+        }
+    }
+
     function handleNext() {
         if (qStep < maxQSteps) {
             // Validation
             if (qStep === 1) {
                 const zip = document.getElementById('zipcode').value;
                 if(zip.length < 5) {
-                    alert("Please enter a valid zip code");
+                    showValidationMsg("Please enter a valid 5-digit zip code");
                     return;
                 }
             }
             if (qStep === 2) {
                 const age = document.getElementById('age').value;
                 if(!age || age < 18 || age > 100) {
-                    alert("Please enter a valid age (18-100)");
+                    showValidationMsg("Please enter a valid age (18-100)");
                     return;
                 }
                 const gender = document.querySelector('input[name="gender"]:checked');
                 if(!gender) {
-                    alert("Please select a gender");
+                    showValidationMsg("Please select a gender");
                     return;
                 }
             }
             if (qStep === 3) {
                  const smoking = document.querySelector('input[name="smoking"]:checked');
                  if(!smoking) {
-                     alert("Please select nicotine use status");
+                     showValidationMsg("Please select nicotine use status");
                      return;
                  }
             }
@@ -253,4 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(chatToggle) chatToggle.addEventListener('click', toggleChat);
     if(closeChat) closeChat.addEventListener('click', toggleChat);
 
+  } catch (err) {
+      console.error("Script Initialization Error:", err);
+  }
 });
