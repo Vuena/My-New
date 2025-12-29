@@ -112,10 +112,30 @@ document.addEventListener('DOMContentLoaded', () => {
             if (qStep === 1) {
                 const zip = document.getElementById('zipcode').value;
                 if(zip.length < 5) {
-                    alert("Please enter a valid zip code"); // Simple alert for MVP
+                    alert("Please enter a valid zip code");
                     return;
                 }
             }
+            if (qStep === 2) {
+                const age = document.getElementById('age').value;
+                if(!age || age < 18 || age > 100) {
+                    alert("Please enter a valid age (18-100)");
+                    return;
+                }
+                const gender = document.querySelector('input[name="gender"]:checked');
+                if(!gender) {
+                    alert("Please select a gender");
+                    return;
+                }
+            }
+            if (qStep === 3) {
+                 const smoking = document.querySelector('input[name="smoking"]:checked');
+                 if(!smoking) {
+                     alert("Please select nicotine use status");
+                     return;
+                 }
+            }
+
             qStep++;
             updateQuoteUI();
         } else {
@@ -127,22 +147,97 @@ document.addEventListener('DOMContentLoaded', () => {
     if(nextBtn) nextBtn.addEventListener('click', handleNext);
     if(mobileNextBtn) mobileNextBtn.addEventListener('click', handleNext);
 
+    function calculatePremium(age, gender, smoking, health, coverage) {
+        let baseRate = 10;
+
+        let ageFactor = (age > 20) ? age - 20 : 0;
+        let ageMultiplier = Math.pow(1.07, ageFactor);
+
+        let genderMultiplier = (gender === 'male') ? 1.1 : 1.0;
+        let smokingMultiplier = (smoking === 'smoker') ? 2.5 : 1.0;
+
+        let healthMultiplier = 1.0;
+        switch (health) {
+            case 'excellent': healthMultiplier = 0.9; break;
+            case 'good': healthMultiplier = 1.0; break;
+            case 'average': healthMultiplier = 1.2; break;
+            case 'fair': healthMultiplier = 1.5; break;
+        }
+
+        // Coverage is linear based on 100k
+        let coverageMultiplier = coverage / 100000;
+
+        return baseRate * ageMultiplier * genderMultiplier * smokingMultiplier * healthMultiplier * coverageMultiplier;
+    }
+
     function showResults() {
-        // Hide Quote Form
-        document.querySelector('.lg\\:col-span-1').classList.add('hidden');
-        // Expand Calculator Col to full width (optional UX choice, or replace quote form with result)
-        // For simplicity, let's replace the calculator content or scroll to a result section
+        try {
+            // Hide Quote Form
+            document.querySelector('.lg\\:col-span-1').classList.add('hidden');
 
-        // Show Matrix
-        const matrix = document.getElementById('result-matrix');
-        matrix.classList.remove('hidden');
-        matrix.scrollIntoView({ behavior: 'smooth' });
+            // Show Matrix
+            const matrix = document.getElementById('result-matrix');
+            matrix.classList.remove('hidden');
+            matrix.scrollIntoView({ behavior: 'smooth' });
 
-        // Update Dummy Prices based on Calculator Input logic (Just for show)
-        const recAmount = parseFloat(recCoverage.textContent.replace('$','').replace('M','')) * 1000000;
-        const basePrice = (recAmount / 100000) * 12; // Dummy math
-        document.getElementById('result-price-1').textContent = `$${basePrice.toFixed(2)}`;
-        document.getElementById('result-price-2').textContent = `$${(basePrice * 1.1).toFixed(2)}`;
+            // Get Input Values for REAL Calculation
+            const ageEl = document.getElementById('age');
+            const age = ageEl ? parseInt(ageEl.value) : 30;
+
+            const genderEl = document.querySelector('input[name="gender"]:checked');
+            const gender = genderEl ? genderEl.value : 'female';
+
+            const smokingEl = document.querySelector('input[name="smoking"]:checked');
+            const smoking = smokingEl ? smokingEl.value : 'non-smoker';
+
+            const healthEl = document.getElementById('health');
+            const health = healthEl ? healthEl.value : 'good';
+
+            // Use Recommended Coverage from Smart Calculator as the coverage amount
+            // format: $1.02M -> 1020000 or $500k -> 500000
+            let recText = recCoverage ? recCoverage.textContent.trim().replace('$','') : "100000";
+            let coverageAmount = 100000; // Default fallback
+
+            if(recText.includes('M')) {
+                coverageAmount = parseFloat(recText.replace('M','')) * 1000000;
+            } else if(recText.includes('k')) {
+                coverageAmount = parseFloat(recText.replace('k','')) * 1000;
+            } else {
+                 // Try simple parse if no suffix
+                 let parsed = parseFloat(recText.replace(/,/g, ''));
+                 if(!isNaN(parsed)) coverageAmount = parsed;
+            }
+
+            // Safety check if parsing failed or resulted in 0
+            if (!coverageAmount || coverageAmount <= 0) coverageAmount = 100000;
+
+            // Calculate
+            const premium = calculatePremium(age, gender, smoking, health, coverageAmount);
+
+            document.getElementById('result-price-1').textContent = `$${premium.toFixed(2)}`;
+            // Competitor price slightly higher
+            document.getElementById('result-price-2').textContent = `$${(premium * 1.15).toFixed(2)}`;
+        } catch (e) {
+            console.error("Calculation Error:", e);
+            alert("An error occurred during calculation.");
+        }
+    }
+
+    // --- Cookie Consent Logic ---
+    const cookieBanner = document.getElementById('cookie-banner');
+    const acceptCookiesBtn = document.getElementById('accept-cookies');
+
+    if (!localStorage.getItem('cookiesAccepted')) {
+        setTimeout(() => {
+            cookieBanner.classList.remove('translate-y-[150%]');
+        }, 1500);
+    }
+
+    if (acceptCookiesBtn) {
+        acceptCookiesBtn.addEventListener('click', () => {
+            localStorage.setItem('cookiesAccepted', 'true');
+            cookieBanner.classList.add('translate-y-[150%]');
+        });
     }
 
 

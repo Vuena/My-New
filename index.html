@@ -162,7 +162,7 @@
     <!-- Main Dashboard / Bento Grid -->
     <main class="flex-grow container mx-auto px-4 py-8 max-w-6xl">
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-16">
 
             <!-- Left Col: Smart Needs Calculator (Ladder-like) -->
             <div class="lg:col-span-2 bento-card p-8">
@@ -342,7 +342,95 @@
                     </div>
                 </div>
             </div>
+            <p class="text-xs text-gray-400 mt-4 text-center">This tool provides educational estimates and is not a substitute for professional financial advice.</p>
         </div>
+
+        <!-- AdSense Placeholder: Mid Content -->
+        <div class="w-full h-[250px] bg-gray-100 border border-gray-200 rounded-xl flex items-center justify-center text-gray-400 text-sm mb-16 mx-auto">
+            <!-- PASTE CONTENT ADSENSE CODE HERE -->
+            AdSpace: Content (Responsive)
+        </div>
+
+        <!-- Insurance Insights (Fintech Style) -->
+        <section class="mb-20">
+            <h2 class="text-3xl font-bold mb-8 text-fintechBlack tracking-tight-heading">Insurance Insights</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Card 1 -->
+                <article class="bento-card p-8 hover:shadow-glow transition-all duration-300 group">
+                    <div class="mb-4">
+                        <span class="text-xs font-bold tracking-wider text-electricBlue uppercase bg-blue-50 px-2 py-1 rounded">Analysis</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 leading-tight group-hover:text-electricBlue transition-colors">Age & Health Impact</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed">
+                        Securing a policy in your 20s or 30s can lock in significantly lower rates. An "Excellent" health rating can lower your estimated premium by as much as 15-20%.
+                    </p>
+                </article>
+
+                <!-- Card 2 -->
+                <article class="bento-card p-8 hover:shadow-glow transition-all duration-300 group">
+                    <div class="mb-4">
+                        <span class="text-xs font-bold tracking-wider text-electricBlue uppercase bg-blue-50 px-2 py-1 rounded">Lifestyle</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 leading-tight group-hover:text-electricBlue transition-colors">The Cost of Habits</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed">
+                        Smokers can expect to pay 200% to 300% more than non-smokers. Quitting for 12 months can reclassify you and save thousands.
+                    </p>
+                </article>
+
+                <!-- Card 3 -->
+                <article class="bento-card p-8 hover:shadow-glow transition-all duration-300 group">
+                    <div class="mb-4">
+                        <span class="text-xs font-bold tracking-wider text-electricBlue uppercase bg-blue-50 px-2 py-1 rounded">Transparency</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 leading-tight group-hover:text-electricBlue transition-colors">Use an Estimator</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed">
+                        Gain transparency before speaking to an agent. Test coverage amounts to find what fits your monthly budget without pressure.
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        <!-- FAQ Section (Minimalist Accordion) -->
+        <section class="max-w-3xl mx-auto mb-20">
+            <h2 class="text-3xl font-bold mb-8 text-center text-fintechBlack tracking-tight-heading">Frequently Asked Questions</h2>
+            <div class="space-y-4">
+                <details class="group bento-card overflow-hidden">
+                    <summary class="flex justify-between items-center font-bold cursor-pointer list-none p-6 text-fintechBlack hover:text-electricBlue transition">
+                        <span>Term vs. Whole Life Insurance?</span>
+                        <span class="transition group-open:rotate-180">
+                            <svg fill="none" height="24" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                        </span>
+                    </summary>
+                    <div class="text-gray-600 text-sm px-6 pb-6 leading-relaxed bg-gray-50/50">
+                        Term life provides coverage for a specific period (e.g., 20 years) and is affordable. Whole life covers you for a lifetime and builds cash value but costs significantly more.
+                    </div>
+                </details>
+
+                <details class="group bento-card overflow-hidden">
+                    <summary class="flex justify-between items-center font-bold cursor-pointer list-none p-6 text-fintechBlack hover:text-electricBlue transition">
+                        <span>How accurate is this estimate?</span>
+                        <span class="transition group-open:rotate-180">
+                            <svg fill="none" height="24" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                        </span>
+                    </summary>
+                    <div class="text-gray-600 text-sm px-6 pb-6 leading-relaxed bg-gray-50/50">
+                        This tool provides a ballpark figure based on standard underwriting. Actual premiums depend on medical exams and specific insurer criteria.
+                    </div>
+                </details>
+
+                <details class="group bento-card overflow-hidden">
+                    <summary class="flex justify-between items-center font-bold cursor-pointer list-none p-6 text-fintechBlack hover:text-electricBlue transition">
+                        <span>Can I change coverage later?</span>
+                        <span class="transition group-open:rotate-180">
+                            <svg fill="none" height="24" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                        </span>
+                    </summary>
+                    <div class="text-gray-600 text-sm px-6 pb-6 leading-relaxed bg-gray-50/50">
+                        Yes, decreasing coverage is usually easy. Increasing it typically requires a new medical review.
+                    </div>
+                </details>
+            </div>
+        </section>
 
     </main>
 
@@ -380,6 +468,16 @@
                 📅 Schedule a Call with an Agent
             </button>
         </div>
+    </div>
+
+    <!-- Cookie Consent Banner -->
+    <div id="cookie-banner" class="fixed bottom-0 left-0 right-0 md:bottom-4 md:left-4 md:right-auto md:w-80 bg-white/90 backdrop-blur-xl border border-gray-200 rounded-2xl shadow-2xl p-4 transform translate-y-[150%] transition-transform duration-500 z-50 flex flex-col gap-3">
+        <p class="text-xs text-gray-600 font-medium">
+            We use cookies to improve your experience.
+        </p>
+        <button id="accept-cookies" class="w-full bg-fintechBlack text-white text-sm font-bold py-2 rounded-xl hover:bg-gray-800 transition-colors">
+            Accept
+        </button>
     </div>
 
     <!-- Footer -->
