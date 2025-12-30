@@ -288,48 +288,29 @@
             </div>
         </div>
 
-        <!-- Result Matrix (Hidden initially) -->
-        <div id="result-matrix" class="hidden mt-12 animate-fade-in">
-            <h2 class="text-2xl font-bold mb-6">Your Matches</h2>
-            <div class="space-y-4">
-                <!-- Best Value Row -->
-                <div class="bento-card p-6 flex flex-col md:flex-row items-center justify-between border-2 border-electricBlue relative overflow-hidden">
-                    <div class="absolute top-0 right-0 bg-electricBlue text-white text-xs font-bold px-3 py-1 rounded-bl-xl">BEST VALUE</div>
-                    <div class="flex items-center gap-4 mb-4 md:mb-0">
-                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center font-bold text-gray-500">BL</div>
-                        <div>
-                            <div class="font-bold text-lg">Banner Life</div>
-                            <div class="text-xs text-gray-500">A.M. Best: A+ (Superior)</div>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-8">
-                        <div class="text-right">
-                            <div class="text-3xl font-bold tracking-tight text-fintechBlack" id="result-price-1">$00.00</div>
-                            <div class="text-xs text-gray-400">/mo</div>
-                        </div>
-                        <button class="bg-electricBlue text-white px-6 py-2 rounded-lg font-bold hover:bg-electricBlueHover transition">Apply</button>
-                    </div>
+        <!-- Result Display (Hidden initially) -->
+        <div id="result-display" class="hidden mt-12 animate-fade-in text-center">
+            <div class="bento-card p-8 md:p-12 border border-gray-200 bg-gradient-to-b from-white to-gray-50">
+                <h2 class="text-2xl font-bold mb-4 text-gray-600">Estimated Average Monthly Premium</h2>
+
+                <div class="flex justify-center items-baseline gap-2 mb-6">
+                    <span id="premium-amount" class="text-6xl font-bold tracking-tighter text-fintechBlack">$0.00</span>
+                    <span class="text-xl text-gray-400 font-medium">/mo</span>
                 </div>
 
-                <!-- Competitor Row -->
-                <div class="bento-card p-6 flex flex-col md:flex-row items-center justify-between">
-                    <div class="flex items-center gap-4 mb-4 md:mb-0">
-                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center font-bold text-gray-500">PL</div>
-                        <div>
-                            <div class="font-bold text-lg">Pacific Life</div>
-                            <div class="text-xs text-gray-500">A.M. Best: A+</div>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-8">
-                        <div class="text-right">
-                            <div class="text-2xl font-bold tracking-tight text-gray-600" id="result-price-2">$00.00</div>
-                            <div class="text-xs text-gray-400">/mo</div>
-                        </div>
-                        <button class="bg-gray-100 text-gray-800 px-6 py-2 rounded-lg font-bold hover:bg-gray-200 transition">View</button>
-                    </div>
+                <div class="flex justify-center gap-4 mb-8">
+                    <button onclick="location.reload()" class="bg-gray-100 text-gray-600 px-6 py-3 rounded-xl font-bold hover:bg-gray-200 transition">
+                        Recalculate
+                    </button>
+                    <button class="bg-electricBlue text-white px-8 py-3 rounded-xl font-bold hover:bg-electricBlueHover transition shadow-glow">
+                        Start Application
+                    </button>
                 </div>
+
+                <p class="text-xs text-gray-400 max-w-lg mx-auto leading-relaxed">
+                    * This figure is an educational estimate based on standard industry averages for the coverage amount selected. It is not a binding offer. Actual premiums are determined by detailed underwriting. Not financial advice.
+                </p>
             </div>
-            <p class="text-xs text-gray-400 mt-4 text-center">This tool provides educational estimates and is not a substitute for professional financial advice.</p>
         </div>
 
         <!-- AdSense Placeholder: Mid Content -->

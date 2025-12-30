@@ -188,10 +188,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // Hide Quote Form
             document.querySelector('.lg\\:col-span-1').classList.add('hidden');
 
-            // Show Matrix
-            const matrix = document.getElementById('result-matrix');
-            matrix.classList.remove('hidden');
-            matrix.scrollIntoView({ behavior: 'smooth' });
+            // Show Result Display
+            const resultDisplay = document.getElementById('result-display');
+            resultDisplay.classList.remove('hidden');
+            resultDisplay.scrollIntoView({ behavior: 'smooth' });
 
             // Get Input Values for REAL Calculation
             const ageEl = document.getElementById('age');
@@ -227,9 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Calculate
             const premium = calculatePremium(age, gender, smoking, health, coverageAmount);
 
-            document.getElementById('result-price-1').textContent = `$${premium.toFixed(2)}`;
-            // Competitor price slightly higher
-            document.getElementById('result-price-2').textContent = `$${(premium * 1.15).toFixed(2)}`;
+            document.getElementById('premium-amount').textContent = `$${premium.toFixed(2)}`;
         } catch (e) {
             console.error("Calculation Error:", e);
             alert("An error occurred during calculation.");
