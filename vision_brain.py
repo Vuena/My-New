@@ -6,6 +6,7 @@ import mss
 import mss.tools
 from PIL import Image
 import io
+import imagehash
 
 class VisionBrain:
     def __init__(self, api_url="http://localhost:1234/v1/chat/completions", model_id="local-model", logger=None):
@@ -29,6 +30,56 @@ class VisionBrain:
             img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
 
             return img_str
+
+    def get_screen_hash(self):
+        """Ekranın görsel hash'ini (parmak izi) döndürür."""
+        with mss.mss() as sct:
+            monitor = sct.monitors[1]
+            sct_img = sct.grab(monitor)
+            img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
+            return imagehash.phash(img)
+
+    def analyze_failure(self):
+        """
+        Takılma durumunda ekrana bakıp nedenini analiz eder (Self-Reflection).
+        """
+        base64_image = self.capture_screen()
+
+        system_prompt = """
+        Sen bir hata ayıklama uzmanısın. Oyun botu takıldı veya ilerleyemiyor.
+        Ekran görüntüsüne bak ve sorunu tespit et.
+
+        Olası Sorunlar:
+        1. Önünde bir engel (duvar, ağaç) var.
+        2. Envanter dolu (Overloaded).
+        3. Bir pop-up penceresi veya diyalog kutusu açılmış.
+        4. Savaş başlamış ama bot fark etmemiş.
+
+        Cevabını kısa ve öz bir "Ders" cümlesi olarak ver.
+        Örn: "Envanter dolu, bankaya gitmelisin." veya "Pop-up penceresini kapat."
+        """
+
+        payload = {
+            "model": self.model_id,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": [
+                    {"type": "text", "text": "Neden takıldım? Ne yapmalıyım?"},
+                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}
+                ]}
+            ],
+            "max_tokens": 150
+        }
+
+        try:
+            response = requests.post(self.api_url, json=payload, headers={"Content-Type": "application/json"}, timeout=30)
+            content = response.json()['choices'][0]['message']['content']
+            if self.logger:
+                self.logger.write(f"[SELF-REFLECTION] Analiz Sonucu: {content}")
+            return content
+        except Exception as e:
+            if self.logger: self.logger.write(f"[HATA] Reflection başarısız: {e}")
+            return "Bilinmeyen hata."
 
     def analyze_screen(self):
         """
@@ -140,17 +191,33 @@ class VisionBrain:
             else: print(msg)
             return None
 
-    def verify_action_success(self, target_type):
+    def verify_action_success(self, target_type, pre_action_hash=None):
         """
         Eylem sonrası ekranı tekrar analiz ederek başarısızlık durumunu kontrol eder.
-        Basit mantık: Kaynak hala oradaysa başarısızdır. Savaş ekranı açıldıysa başarılıdır.
+        Görsel hash farkı (Delta) ve LLM analizi kullanır.
         """
         if self.logger:
             self.logger.write("[VISION] Eylem sonucu doğrulanıyor...")
         else:
             print("[VISION] Eylem sonucu doğrulanıyor...")
 
-        time.sleep(1) # Animasyonların bitmesi için kısa bekleme
+        time.sleep(1.5) # Hareketin başlaması için bekle
+
+        # 1. Aşama: Visual Delta (Hash Farkı) Kontrolü
+        if pre_action_hash:
+            post_action_hash = self.get_screen_hash()
+            hash_diff = pre_action_hash - post_action_hash
+
+            if self.logger:
+                self.logger.write(f"[DELTA] Görsel değişim skoru: {hash_diff}")
+
+            # Eğer değişim çok azsa (ekran donduysa veya tıklama boşa gittiyse)
+            if hash_diff < 5:
+                if self.logger:
+                    self.logger.write("[DELTA] HATA: Ekranda belirgin bir değişim olmadı.")
+                # Yine de LLM'e sormak isteyebiliriz ama şimdilik bunu başarısızlık işareti sayabiliriz.
+                # Ancak bazen sadece koşarken hash az değişebilir, o yüzden LLM kontrolüne devam ediyoruz.
+
         base64_image = self.capture_screen()
 
         system_prompt = f"""

@@ -8,18 +8,18 @@ from memory import DynamicMemory
 from human_mouse import HumanMouse
 from vision_brain import VisionBrain
 from logger import Logger
+from strategy import GeneralStrategy
 
 def main():
     # Logger'ı başlat
     log = Logger()
     log.write("=== Dofus AI Ajanı Başlatılıyor ===")
-    log.write("Çıkış için Ctrl+C basınız.")
 
     # Modülleri başlat
     memory = DynamicMemory()
     mouse = HumanMouse()
-    # Logger'ı vision_brain'e ilet (AI logları için)
     brain = VisionBrain(api_url="http://localhost:1234/v1/chat/completions", model_id="local-model", logger=log)
+    strategy = GeneralStrategy(logger=log)
 
     # Ekran boyutlarını al (Koordinat ölçekleme için)
     screen_w, screen_h = pyautogui.size()
@@ -27,11 +27,18 @@ def main():
     # Karakterin (ekranın ortası) konumu
     center_x, center_y = screen_w // 2, screen_h // 2
 
-    # Yasaklı bölgeye kaç kez denk gelindiğini sayar
+    # Sayaçlar
     forbidden_streak = 0
+    failure_streak = 0 # Üst üste başarısız eylem sayısı
+
+    # Başlangıç Stratejisi Belirle (Varsayılan Level 1)
+    current_strategy = strategy.determine_objective(1, "Incarnam")
 
     while True:
         try:
+            # 0. Adım: Durum Kontrolü (Savaşta mıyız?)
+            # Buraya ilerde savaş kontrolü eklenebilir.
+
             # 1. Adım: Görüntü Al ve Analiz Et
             decision = brain.analyze_screen()
 
@@ -74,20 +81,34 @@ def main():
                     # 4. Adım: Eylemi Gerçekleştir
                     log.write(f"[EYLEM] Gidiliyor... Sebep: {reason}")
 
+                    # Tıklama öncesi Hash al (Visual Delta için)
+                    pre_hash = brain.get_screen_hash()
+
                     mouse.click(target_x, target_y)
 
                     # 5. Adım: Başarı Kontrolü
                     log.write("[KONTROL] Eylem sonucu analiz ediliyor...")
-                    time.sleep(3)
 
-                    result = brain.verify_action_success(decision['target_type'])
+                    # Verify fonksiyonu artık hash delta kontrolü de yapıyor
+                    result = brain.verify_action_success(decision['target_type'], pre_action_hash=pre_hash)
 
                     if result and not result.get("success", True):
-                        log.write(f"[HATA] Eylem başarısız oldu! Sebep: {result.get('reason')}")
+                        failure_streak += 1
+                        log.write(f"[HATA] Eylem başarısız oldu! (Sayaç: {failure_streak}) Sebep: {result.get('reason')}")
                         log.write(f"[ÖĞRENME] Koordinat ({target_x}, {target_y}) yasaklı listeye ekleniyor.")
                         memory.add_forbidden_zone(target_x, target_y, reason=result.get('reason', 'Eylem başarısız'))
+
+                        # Self-Reflection (Öz-Eleştiri) Döngüsü
+                        if failure_streak >= 3:
+                            log.write("[SELF-REFLECTION] Çok fazla hata yapıldı. Durum analizi yapılıyor...")
+                            advice = brain.analyze_failure()
+                            log.write(f"[DERS] Alınan ders: {advice}")
+                            # Dersi hafızaya eklemek şimdilik loga yazmakla sınırlı, ilerde 'context'e eklenebilir.
+                            failure_streak = 0
+
                     else:
                         log.write(f"[BAŞARI] Eylem başarılı görünüyor: {result.get('reason', 'Bilinmiyor')}")
+                        failure_streak = 0 # Başarılı olunca sayacı sıfırla
                         mouse.random_sleep(0.5, 1.5)
 
                 else:
