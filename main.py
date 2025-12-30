@@ -24,6 +24,9 @@ def main():
     # Ekran boyutlarını al (Koordinat ölçekleme için)
     screen_w, screen_h = pyautogui.size()
 
+    # Karakterin (ekranın ortası) konumu
+    center_x, center_y = screen_w // 2, screen_h // 2
+
     # Yasaklı bölgeye kaç kez denk gelindiğini sayar
     forbidden_streak = 0
 
@@ -54,7 +57,16 @@ def main():
 
                 log.write(f"[KARAR] Hedef bulundu: {decision['target_type']} @ ({target_x}, {target_y})")
 
-                # 3. Adım: Hafıza Kontrolü (Neden-Sonuç)
+                # 3. Adım: Hafıza Kontrolü (Neden-Sonuç) ve Oyuncu Koruma
+                # Karakterin üzerine (ekranın ortasına) tıklamayı engelle (Yarıçap: 70px)
+                dist_to_center = ((target_x - center_x)**2 + (target_y - center_y)**2)**0.5
+                if dist_to_center < 70:
+                    log.write(f"[İPTAL] Hedef oyuncunun üzerinde! (Mesafe: {dist_to_center:.2f}px)")
+                    # Bu durumu 'yasaklı' saymıyoruz ama tıklamıyoruz da.
+                    # Ancak sürekli kendine tıklamaya çalışıyorsa döngüye girebilir, o yüzden pas geçiyoruz.
+                    time.sleep(0.5)
+                    continue
+
                 if memory.is_action_safe(target_x, target_y):
                     # Yasaklı olmayan güvenli bir hedef bulundu, sayacı sıfırla
                     forbidden_streak = 0

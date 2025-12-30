@@ -28,7 +28,7 @@ class HumanMouse:
             points.append((x, y))
         return points
 
-    def move_to(self, target_x, target_y, duration=0.3):
+    def move_to(self, target_x, target_y, duration=0.15):
         """
         Hedef noktaya insansı, kavisli bir hareketle gider.
         Hedefe varmadan önce +/- 5 piksel sapma ve rastgele hız değişimleri uygular.
@@ -41,21 +41,22 @@ class HumanMouse:
 
         # Eğer mesafe çok kısaysa direkt git (aşırı hesaplamaya gerek yok)
         if dist < 50:
-            pyautogui.moveTo(target_x, target_y, duration=duration * 0.5, tween=pyautogui.easeOutQuad)
+            pyautogui.moveTo(target_x, target_y, duration=duration * 0.2, tween=pyautogui.easeOutQuad)
             return
 
-        # Kontrol noktalarını rastgele seç
+        # Kontrol noktalarını daha az rastgele seç (Daha düzgün, hızlı hareket)
         control1 = (
-            start_x + (target_x - start_x) * 0.3 + random.uniform(-100, 100),
-            start_y + (target_y - start_y) * 0.3 + random.uniform(-100, 100)
+            start_x + (target_x - start_x) * 0.3 + random.uniform(-30, 30),
+            start_y + (target_y - start_y) * 0.3 + random.uniform(-30, 30)
         )
         control2 = (
-            start_x + (target_x - start_x) * 0.7 + random.uniform(-100, 100),
-            start_y + (target_y - start_y) * 0.7 + random.uniform(-100, 100)
+            start_x + (target_x - start_x) * 0.7 + random.uniform(-30, 30),
+            start_y + (target_y - start_y) * 0.7 + random.uniform(-30, 30)
         )
 
-        # Bezier yolunu hesapla
-        path_points = self._bezier_curve((start_x, start_y), (target_x, target_y), control1, control2)
+        # Bezier yolunu hesapla (Nokta sayısını azaltarak hızlandır)
+        # 25 nokta -> 8 nokta
+        path_points = self._bezier_curve((start_x, start_y), (target_x, target_y), control1, control2, num_points=8)
 
         # Yol boyunca hareket et
         # Hareketi daha doğal yapmak için her adımda bekleme süresini biraz değiştirmiyoruz çünkü
@@ -67,7 +68,7 @@ class HumanMouse:
         for x, y in path_points:
             # Her adımda çok küçük mikro sapmalar eklemiyoruz, kavis zaten yeterli.
             # Sadece çok hızlı hareket et.
-            pyautogui.moveTo(x, y, duration=0.01) # Çok kısa süre, akıcı görünmesi için
+            pyautogui.moveTo(x, y, duration=0.002) # Çok kısa süre (0.01 -> 0.002)
 
         # Son düzeltme: Hedef noktaya tam varış (veya +/- sapma ile)
         jitter_x = random.randint(-5, 5)
@@ -75,12 +76,12 @@ class HumanMouse:
         final_x = target_x + jitter_x
         final_y = target_y + jitter_y
 
-        pyautogui.moveTo(final_x, final_y, duration=0.1, tween=pyautogui.easeOutQuad)
+        pyautogui.moveTo(final_x, final_y, duration=0.02, tween=pyautogui.easeOutQuad)
 
     def click(self, x, y):
         """Belirtilen koordinata gider ve tıklar."""
         self.move_to(x, y)
-        time.sleep(random.uniform(0.1, 0.3)) # Tıklamadan önce milisaniyelik insan beklemesi
+        time.sleep(random.uniform(0.01, 0.05)) # Tıklamadan önce bekleme (0.1 -> 0.01)
         pyautogui.click()
         print(f"[MOUSE] Tıklandı: {x}, {y}")
 

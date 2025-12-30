@@ -49,20 +49,32 @@ class VisionBrain:
         # Qwen VL için prompt yapısı
         # Not: Modelin yeteneğine göre prompt optimize edilmelidir.
         system_prompt = """
-        Sen Dofus oyunu için bir otomasyon asistanısın. Görevin ekrandaki toplanabilir kaynakları (ağaç, maden, bitki) veya saldırılabilecek canavarları tespit etmek.
+        Sen Dofus oyunu için bir otomasyon asistanısın. Görevin ekrandaki toplanabilir kaynakları bulmaktır.
 
-        ÖNEMLİ: Sadece TEK BİR hedef seç ve koordinatını ver.
-        Cevabını SADECE geçerli bir JSON formatında ver. Başka hiçbir metin yazma.
+        KARAKTER BİLGİSİ:
+        - Senin karakterin mavi giyimli bir okçu (xnea).
+        - Ekranın tam ortasında duruyor.
+        - ASLA kendi karakterine tıklama.
+
+        HEDEF BİLGİSİ (BUĞDAY / WHEAT):
+        - Sadece SARI, DOLU ve dik duran buğday başaklarını seç.
+        - Eğer buğday kesilmişse (kısa saplar) veya sönükse (exhausted) onu yoksay.
+        - Mouse ile üzerine gelindiğinde "Wheat" yazan ve altında "Reap" çıkanlar hedeftir.
+
+        ÖNEMLİ KURALLAR:
+        1. Sadece TEK BİR geçerli hedef seç.
+        2. Karakterin üzerine (ekran ortasına) koordinat verme.
+        3. Cevabını SADECE geçerli bir JSON formatında ver.
 
         JSON Formatı:
         {
             "found": true/false,
             "target_type": "resource" veya "enemy" veya "none",
             "coordinates": {"x": 100, "y": 200},
-            "reason": "Burada bir buğday tarlası tespit edildi."
+            "reason": "Sarı ve hasada hazır buğday tespit edildi."
         }
 
-        Eğer hiçbir şey yoksa "found": false döndür.
+        Eğer hasat edilebilir (sarı) bir şey yoksa "found": false döndür.
         """
 
         payload = {
@@ -77,7 +89,7 @@ class VisionBrain:
                     "content": [
                         {
                             "type": "text",
-                            "text": "Ekranda toplanacak kaynak veya saldırılacak düşman var mı? Varsa bir tanesinin koordinatını ver."
+                            "text": "Ekranda toplanacak sarı buğday var mı? Koordinat ver."
                         },
                         {
                             "type": "image_url",
