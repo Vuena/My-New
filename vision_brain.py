@@ -8,9 +8,10 @@ from PIL import Image
 import io
 
 class VisionBrain:
-    def __init__(self, api_url="http://localhost:1234/v1/chat/completions", model_id="local-model"):
+    def __init__(self, api_url="http://localhost:1234/v1/chat/completions", model_id="local-model", logger=None):
         self.api_url = api_url
         self.model_id = model_id
+        self.logger = logger
 
     def capture_screen(self):
         """Tüm ekranın görüntüsünü alır ve base64 formatına çevirir."""
@@ -33,10 +34,17 @@ class VisionBrain:
         """
         Ekran görüntüsünü modele gönderir ve JSON formatında aksiyon kararı ister.
         """
-        print("[VISION] Ekran görüntüsü alınıyor...")
+        if self.logger:
+            self.logger.write("[VISION] Ekran görüntüsü alınıyor...")
+        else:
+            print("[VISION] Ekran görüntüsü alınıyor...")
+
         base64_image = self.capture_screen()
 
-        print("[VISION] Modele gönderiliyor...")
+        if self.logger:
+            self.logger.write("[VISION] Modele gönderiliyor...")
+        else:
+            print("[VISION] Modele gönderiliyor...")
 
         # Qwen VL için prompt yapısı
         # Not: Modelin yeteneğine göre prompt optimize edilmelidir.
@@ -97,17 +105,27 @@ class VisionBrain:
             elif "```" in content:
                 content = content.split("```")[1].strip()
 
+            # Log AI Interaction
+            if self.logger:
+                self.logger.log_ai_interaction(system_prompt, content)
+
             decision = json.loads(content)
             return decision
 
         except requests.exceptions.RequestException as e:
-            print(f"[HATA] API isteği başarısız: {e}")
+            msg = f"[HATA] API isteği başarısız: {e}"
+            if self.logger: self.logger.write(msg)
+            else: print(msg)
             return None
         except json.JSONDecodeError:
-            print(f"[HATA] Model JSON döndürmedi. Gelen veri: {content}")
+            msg = f"[HATA] Model JSON döndürmedi. Gelen veri: {content}"
+            if self.logger: self.logger.write(msg)
+            else: print(msg)
             return None
         except Exception as e:
-            print(f"[HATA] Beklenmeyen hata: {e}")
+            msg = f"[HATA] Beklenmeyen hata: {e}"
+            if self.logger: self.logger.write(msg)
+            else: print(msg)
             return None
 
     def verify_action_success(self, target_type):
@@ -115,7 +133,11 @@ class VisionBrain:
         Eylem sonrası ekranı tekrar analiz ederek başarısızlık durumunu kontrol eder.
         Basit mantık: Kaynak hala oradaysa başarısızdır. Savaş ekranı açıldıysa başarılıdır.
         """
-        print("[VISION] Eylem sonucu doğrulanıyor...")
+        if self.logger:
+            self.logger.write("[VISION] Eylem sonucu doğrulanıyor...")
+        else:
+            print("[VISION] Eylem sonucu doğrulanıyor...")
+
         time.sleep(1) # Animasyonların bitmesi için kısa bekleme
         base64_image = self.capture_screen()
 
@@ -158,10 +180,16 @@ class VisionBrain:
             elif "```" in content:
                 content = content.split("```")[1].strip()
 
+            # Log AI Interaction (Verification)
+            if self.logger:
+                self.logger.log_ai_interaction(system_prompt, content)
+
             return json.loads(content)
 
         except Exception as e:
-            print(f"[HATA] Doğrulama hatası: {e}")
+            msg = f"[HATA] Doğrulama hatası: {e}"
+            if self.logger: self.logger.write(msg)
+            else: print(msg)
             return {"success": True} # Hata durumunda döngüyü bozmamak için varsayılan başarılı kabul et
 
         except requests.exceptions.RequestException as e:
