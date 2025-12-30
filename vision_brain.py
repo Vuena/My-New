@@ -98,6 +98,16 @@ class VisionBrain:
             decision = json.loads(content)
             return decision
 
+        except requests.exceptions.RequestException as e:
+            print(f"[HATA] API isteği başarısız: {e}")
+            return None
+        except json.JSONDecodeError:
+            print(f"[HATA] Model JSON döndürmedi. Gelen veri: {content}")
+            return None
+        except Exception as e:
+            print(f"[HATA] Beklenmeyen hata: {e}")
+            return None
+
     def verify_action_success(self, target_type):
         """
         Eylem sonrası ekranı tekrar analiz ederek başarısızlık durumunu kontrol eder.
