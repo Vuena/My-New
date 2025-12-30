@@ -42,6 +42,8 @@ class VisionBrain:
         # Not: Modelin yeteneğine göre prompt optimize edilmelidir.
         system_prompt = """
         Sen Dofus oyunu için bir otomasyon asistanısın. Görevin ekrandaki toplanabilir kaynakları (ağaç, maden, bitki) veya saldırılabilecek canavarları tespit etmek.
+
+        ÖNEMLİ: Sadece TEK BİR hedef seç ve koordinatını ver.
         Cevabını SADECE geçerli bir JSON formatında ver. Başka hiçbir metin yazma.
 
         JSON Formatı:
@@ -67,7 +69,7 @@ class VisionBrain:
                     "content": [
                         {
                             "type": "text",
-                            "text": "Ekranda toplanacak kaynak veya saldırılacak düşman var mı? Varsa koordinatlarını ver."
+                            "text": "Ekranda toplanacak kaynak veya saldırılacak düşman var mı? Varsa bir tanesinin koordinatını ver."
                         },
                         {
                             "type": "image_url",
@@ -119,12 +121,19 @@ class VisionBrain:
 
         system_prompt = f"""
         Sen bir doğrulama asistanısın. Az önce bir '{target_type}' hedefine tıklandı.
-        Şu anki ekran görüntüsüne bakarak işlemin başarılı olup olmadığını söyle.
+        Şu anki ekran görüntüsüne bakarak işlemin başarılı olup olmadığını kontrol et.
+
+        Başarılı sayılması için şunlardan BİRİSİ gerçekleşmiş olmalı:
+        1. Kaynak (ağaç/bitki) ekrandan kayboldu veya kesildi.
+        2. Savaş ekranı açıldı (ekran tamamen değişti).
+        3. Karakter hedefe doğru koşuyor veya hareket ediyor.
+
+        Eğer karakter hareket halindeyse bunu BAŞARILI (success: true) saymalısın.
 
         Cevabını SADECE JSON formatında ver:
         {{
             "success": true/false,
-            "reason": "Kaynak ekrandan kayboldu" veya "Savaş ekranı açıldı" veya "Hiçbir şey değişmedi"
+            "reason": "Karakter hareket ediyor" veya "Kaynak kayboldu" veya "Hiçbir şey değişmedi"
         }}
         """
 
@@ -133,7 +142,7 @@ class VisionBrain:
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": [
-                    {"type": "text", "text": "İşlem başarılı mı? Ekran değişti mi?"},
+                    {"type": "text", "text": "İşlem başarılı mı? Karakter hareket ediyor mu veya kaynak toplandı mı?"},
                     {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}
                 ]}
             ],

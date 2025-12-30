@@ -17,6 +17,9 @@ def main():
     # Ekran boyutlarını al (Koordinat ölçekleme için)
     screen_w, screen_h = pyautogui.size()
 
+    # Yasaklı bölgeye kaç kez denk gelindiğini sayar
+    forbidden_streak = 0
+
     while True:
         try:
             # 1. Adım: Görüntü Al ve Analiz Et
@@ -24,24 +27,15 @@ def main():
 
             if not decision:
                 print("[DÖNGÜ] Karar alınamadı, tekrar deneniyor...")
-                time.sleep(2)
+                time.sleep(1) # Beklemeyi azalttık
                 continue
 
             # 2. Adım: Kararı Değerlendir
             if decision.get("found"):
-                # Qwen VL genellikle [0-1000] aralığında koordinat verir.
-                # Eğer model pixel veriyorsa bu adım atlanabilir, ancak genelde normalize değer verir.
-                # Biz her ihtimale karşı modelden pixel istediğimizi varsaysak da,
-                # güvenli taraf için modelin döndürdüğü değerleri kontrol etmeliyiz.
-                # Ancak kullanıcı promptunda "koordinatları ver" dedi, modelin pixel mi normalize mi döndüreceği
-                # kullanılan modele göre değişir. Qwen VL 2.5/MAX genelde normalize (1000x1000) çalışır.
-
+                # Koordinat hesaplama...
                 raw_x = decision["coordinates"]["x"]
                 raw_y = decision["coordinates"]["y"]
 
-                # Basit bir kontrol: Eğer koordinatlar 1000'den küçük ve ekran 1920 ise muhtemelen normalize'dir.
-                # Ancak Dofus penceresi küçük de olabilir.
-                # Burada varsayım: Model 1000x1000 grid kullanıyor.
                 if raw_x <= 1000 and raw_y <= 1000 and screen_w > 1000:
                     target_x = int((raw_x / 1000) * screen_w)
                     target_y = int((raw_y / 1000) * screen_h)
@@ -56,17 +50,17 @@ def main():
 
                 # 3. Adım: Hafıza Kontrolü (Neden-Sonuç)
                 if memory.is_action_safe(target_x, target_y):
+                    # Yasaklı olmayan güvenli bir hedef bulundu, sayacı sıfırla
+                    forbidden_streak = 0
+
                     # 4. Adım: Eylemi Gerçekleştir
                     print(f"[EYLEM] Gidiliyor... Sebep: {reason}")
 
                     mouse.click(target_x, target_y)
 
-                    # 5. Adım: Başarı Kontrolü (Görsel Zeka ile)
-                    # Modelden eylemin başarılı olup olmadığını kontrol etmesini iste
-                    # Karakter hedefe doğru koşuyor mu veya savaş başladı mı?
+                    # 5. Adım: Başarı Kontrolü
                     print("[KONTROL] Eylem sonucu analiz ediliyor...")
-                    # Hareket için biraz zaman tanı (örn. 3-4 saniye)
-                    time.sleep(4)
+                    time.sleep(3) # Beklemeyi azalttık (Daha hızlı tepki)
 
                     result = brain.verify_action_success(decision['target_type'])
 
@@ -76,15 +70,27 @@ def main():
                         memory.add_forbidden_zone(target_x, target_y, reason=result.get('reason', 'Eylem başarısız'))
                     else:
                         print(f"[BAŞARI] Eylem başarılı görünüyor: {result.get('reason', 'Bilinmiyor')}")
-                        mouse.random_sleep(1, 2) # İşlem sonrası dinlenme
+                        mouse.random_sleep(0.5, 1.5) # İşlem sonrası dinlenme (Azaltıldı)
 
                 else:
                     print("[İPTAL] Bu koordinat daha önce hatalı olarak işaretlenmiş. Atlanıyor.")
+                    forbidden_streak += 1
+
+                    # Eğer sürekli yasaklı bölgeye denk geliyorsak (Döngüye girdiyse)
+                    if forbidden_streak >= 3:
+                        print("[DÖNGÜ KIRICI] Sürekli yasaklı hedef bulunuyor. Rastgele hareket yapılıyor...")
+                        # Ekranın ortasına yakın rastgele bir yere tıkla veya mouse'u oynat
+                        rand_x = screen_w // 2 + random.randint(-200, 200)
+                        rand_y = screen_h // 2 + random.randint(-200, 200)
+                        mouse.move_to(rand_x, rand_y, duration=0.2)
+                        forbidden_streak = 0 # Sayacı sıfırla
+                        time.sleep(1)
+
             else:
                 print("[DÖNGÜ] Hedef bulunamadı. Bekleniyor...")
 
             # Döngü arası bekleme
-            mouse.random_sleep(2, 4)
+            mouse.random_sleep(1, 2) # Genel döngü hızını artırdık (Azaltıldı)
 
         except KeyboardInterrupt:
             print("\n[SİSTEM] Kullanıcı tarafından durduruldu.")

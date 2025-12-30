@@ -28,7 +28,7 @@ class HumanMouse:
             points.append((x, y))
         return points
 
-    def move_to(self, target_x, target_y, duration=0.5):
+    def move_to(self, target_x, target_y, duration=0.3):
         """
         Hedef noktaya insansı, kavisli bir hareketle gider.
         Hedefe varmadan önce +/- 5 piksel sapma ve rastgele hız değişimleri uygular.
